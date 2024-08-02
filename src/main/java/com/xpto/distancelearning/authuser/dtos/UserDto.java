@@ -25,6 +25,7 @@ public class UserDto {
 
     private UUID userId;
 
+    // Because I am using 'groups' in the validation, I needed to use the @Validated annotation in the controller.
     @NotBlank(groups = UserView.RegistrationPost.class)
     @Size(min = 4, max = 50, groups = UserView.RegistrationPost.class)
     @UsernameConstraint(groups = UserView.RegistrationPost.class) // My custom annotation
