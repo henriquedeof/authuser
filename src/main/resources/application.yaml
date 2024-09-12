@@ -18,3 +18,12 @@ spring:
 #                format_sql: true
 #                show_sql: true
 
+# Defining the logging level for the application
+logging:
+    level:
+        com.xpto.distancelearning: TRACE
+        root: INFO
+        org.springframework.web: DEBUG
+        org.hibernate: INFO
+
+
