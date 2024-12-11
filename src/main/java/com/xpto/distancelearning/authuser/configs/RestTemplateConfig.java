@@ -1,4 +1,4 @@
-package com.xpto.distancelearning.authuser.clients;
+package com.xpto.distancelearning.authuser.configs;
 
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.context.annotation.Bean;
