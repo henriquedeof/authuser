@@ -27,3 +27,7 @@ logging:
         org.hibernate: INFO
 
 
+distance-learning:
+    api:
+        url:
+            course: 'http://localhost:8082'

@@ -4,6 +4,7 @@ import com.xpto.distancelearning.authuser.models.UserModel;
 import com.xpto.distancelearning.authuser.specifications.SpecificationTemplate;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 
 import java.util.List;
 import java.util.Optional;
@@ -26,5 +27,6 @@ public interface UserService {
      * @param pageable
      * @return
      */
-    Page<UserModel> findAll(SpecificationTemplate.UserSpec spec, Pageable pageable);
+    //Page<UserModel> findAll(SpecificationTemplate.UserSpec spec, Pageable pageable);
+    Page<UserModel> findAll(Specification<UserModel> spec, Pageable pageable);
 }
