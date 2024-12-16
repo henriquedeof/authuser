@@ -33,6 +33,7 @@ public class AuthenticationController {
     @Autowired
     private UserService userService;
 
+    // Because I am using Validation Groups (or 'groups'), I need to use the annotation @Validated (NOT @Valid)
     @PostMapping("/signup")
     public ResponseEntity<Object> registerUser(@RequestBody @Validated(UserDto.UserView.RegistrationPost.class)
                                                @JsonView(UserDto.UserView.RegistrationPost.class) UserDto userDto) {

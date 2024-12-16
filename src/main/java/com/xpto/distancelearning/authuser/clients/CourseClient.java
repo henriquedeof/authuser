@@ -5,6 +5,7 @@ import com.xpto.distancelearning.authuser.dtos.ResponsePageDto;
 import com.xpto.distancelearning.authuser.services.UtilsService;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -19,7 +20,7 @@ import java.util.UUID;
 
 @Log4j2
 @Component
-public class UserClient {
+public class CourseClient {
 
     @Autowired
     private RestTemplate restTemplate;
@@ -27,8 +28,8 @@ public class UserClient {
     @Autowired
     private UtilsService utilsService;
 
-    // private String REQUEST_URI = "http://localhost:8082";
-    private String REQUEST_URL_COURSE = "http://localhost:8082";
+    @Value("${distance-learning.api.url.course}")
+    private String REQUEST_URL_COURSE;
 
     public Page<CourseDto> getAllCoursesByUser(UUID userId, Pageable pageable) {
         List<CourseDto> searchResult = null;
@@ -40,7 +41,7 @@ public class UserClient {
 
         try {
             ParameterizedTypeReference<ResponsePageDto<CourseDto>> responseType = new ParameterizedTypeReference<>() { };
-            result = restTemplate.exchange(url, HttpMethod.GET, null, responseType);
+            result = restTemplate.exchange(url, HttpMethod.GET, null, responseType); // It calls the Course API and also the dl-course.tb_courses_users table
             searchResult = result.getBody().getContent();
             log.debug("Response Number of Elements: {} ", searchResult.size());
         } catch (HttpStatusCodeException e) {

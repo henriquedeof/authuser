@@ -11,6 +11,8 @@ import java.util.List;
 
 public class ResponsePageDto<T> extends PageImpl<T> {
 
+    // The @JsonCreator annotation, along with the @JsonProperty annotations on the constructor parameters, explicitly tells Jackson how to construct an instance of ResponsePageDto from JSON data.
+    // Without it, Jackson will not be able to match the JSON properties to the constructor parameters, leading to deserialization errors.
     @JsonCreator(mode = JsonCreator.Mode.PROPERTIES)
     public ResponsePageDto(@JsonProperty("content") List<T> content,
                            @JsonProperty("number") int number,
