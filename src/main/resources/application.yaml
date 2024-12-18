@@ -1,5 +1,7 @@
 server:
     port: 8087
+    servlet:
+        context-path: '/dl-authuser/' # This is the context path for the service. Used in conjunction with the API Gateway that has it mapped in the routes.
 
 spring:
     application:
@@ -33,7 +35,7 @@ distance-learning:
     api:
         url:
 #            course: 'http://localhost:8082' # I do not to hardcode the URL anymore and instead use the service name defined in the Eureka.
-            course: 'http://dl-course-service'
+            course: 'http://dl-course-service/dl-course'
 
 eureka:
     client:
