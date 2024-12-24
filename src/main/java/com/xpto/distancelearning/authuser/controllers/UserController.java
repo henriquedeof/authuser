@@ -21,7 +21,8 @@ import java.time.ZoneId;
 import java.util.Optional;
 import java.util.UUID;
 
-import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.*;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 @Log4j2
 @RestController
@@ -41,25 +42,22 @@ public class UserController {
      * @return
      */
     @GetMapping
-    public ResponseEntity<Page<UserModel>> getAllUsers(SpecificationTemplate.UserSpec spec,
-                                                       @PageableDefault(page = 0, size = 10, sort = "userId", direction = Sort.Direction.ASC) Pageable pageable,
-                                                       @RequestParam(required = false) UUID courseId) {
-
-//        Page<UserModel> userModelPage = userService.findAll(spec, pageable);
-//        if (!userModelPage.isEmpty()) {
-//            for (UserModel user : userModelPage.toList()) {
+    public ResponseEntity<Page<UserModel>> getAllUsers(SpecificationTemplate.UserSpec spec, @PageableDefault(page = 0, size = 10, sort = "userId", direction = Sort.Direction.ASC) Pageable pageable) {
+//        Page<UserModel> userModelPage = null;
+//        if(courseId != null){
+//            userModelPage = userService.findAll(SpecificationTemplate.userCourseId(courseId).and(spec), pageable);
+//        } else {
+//            userModelPage = userService.findAll(spec, pageable);
+//        }
+//        if(!userModelPage.isEmpty()){
+//            for(UserModel user : userModelPage.toList()){
 //                // Setting HATEOAS
 //                user.add(linkTo(methodOn(UserController.class).getOneUser(user.getUserId())).withSelfRel());
 //            }
 //        }
 //        return ResponseEntity.status(HttpStatus.OK).body(userModelPage);
 
-        Page<UserModel> userModelPage = null;
-        if(courseId != null){
-            userModelPage = userService.findAll(SpecificationTemplate.userCourseId(courseId).and(spec), pageable);
-        } else {
-            userModelPage = userService.findAll(spec, pageable);
-        }
+        Page<UserModel> userModelPage = userService.findAll(spec, pageable);
         if(!userModelPage.isEmpty()){
             for(UserModel user : userModelPage.toList()){
                 // Setting HATEOAS
@@ -85,7 +83,8 @@ public class UserController {
         log.debug("DELETE deleteUser userId received {}: ", userId);
         Optional<UserModel> userModel = userService.findById(userId);
         if (userModel.isPresent()) {
-            userService.delete(userModel.get());
+            //userService.delete(userModel.get());
+            userService.deleteUser(userModel.get());
             log.debug("DELETE deleteUser userId saved {}: ", userId);
             log.info("User deleted successfully. UserId {}: ", userId);
             return ResponseEntity.status(HttpStatus.OK).body("User deleted successfully");
@@ -110,7 +109,8 @@ public class UserController {
             userModel.setPhoneNumber(userDto.getPhoneNumber());
             userModel.setCpf(userDto.getCpf());
             userModel.setLastUpdateDate(LocalDateTime.now(ZoneId.of("UTC")));
-            userService.save(userModel);
+            //userService.save(userModel);
+            userService.updateUser(userModel);
 
             log.debug("PUT updateUser userModel userId {}: ", userModel.getUserId());
             log.info("User updated successfully. UserId {}: ", userModel.getUserId());
@@ -133,7 +133,7 @@ public class UserController {
             var userModel = userModelOptional.get();
             userModel.setPassword(userDto.getPassword());
             userModel.setLastUpdateDate(LocalDateTime.now(ZoneId.of("UTC")));
-            userService.save(userModel);
+            userService.updatePassword(userModel);
             log.debug("PUT updatePassword userModel userId {}: ", userModel.getUserId());
             log.info("Password updated successfully. UserId {}: ", userModel.getUserId());
             return ResponseEntity.status(HttpStatus.OK).body("Password updated successfully.");
@@ -152,7 +152,7 @@ public class UserController {
             var userModel = userModelOptional.get();
             userModel.setImageUrl(userDto.getImageUrl());
             userModel.setLastUpdateDate(LocalDateTime.now(ZoneId.of("UTC")));
-            userService.save(userModel);
+            userService.updateUser(userModel);
             return ResponseEntity.status(HttpStatus.OK).body(userModel);
         }
     }
