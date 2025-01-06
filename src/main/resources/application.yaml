@@ -36,6 +36,7 @@ dl:
     api:
         url:
 #            course: 'http://localhost:8082' # I do not to hardcode the URL anymore and instead use the service name defined in the Eureka.
+#            'dl-course-service' is the name of the service defined in spring.application.name in the application.yaml file of the dl-course-service.
             course: 'http://dl-course-service/dl-course'
     broker:
         exchange:
