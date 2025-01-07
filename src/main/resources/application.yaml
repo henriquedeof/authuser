@@ -48,3 +48,20 @@ eureka:
             defaultZone: 'http://localhost:8761/eureka'
     instance:
         hostname: localhost
+
+# Configuring the Circuit Breaker with Resilience4j (globally) for the service.
+resilience4j:
+    circuitbreaker:
+        instances:
+          circuitBreakerInstance:
+            slidingWindowSize: 30
+            permittedNumberOfCallsInHalfOpenState: 2
+            slidingWindowType: TIME_BASED
+            minimumNumberOfCalls: 2
+            waitDurationInOpenState: 30s
+            failureRateThreshold: 80
+    retry:
+        instances:
+            retryInstance:
+                maxAttempts: 3
+                waitDuration: 5s
