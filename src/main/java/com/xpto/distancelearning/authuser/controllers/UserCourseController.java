@@ -39,7 +39,7 @@ public class UserCourseController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found.");
         }
 
-        // Call the Course Service synchronously, using RestTemplate
+        // Call the Course Service SYNCHRONOUSLY, using RestTemplate
         Page<CourseDto> allCoursesByUser = courseClient.getAllCoursesByUser(userId, pageable);
         return ResponseEntity.status(HttpStatus.OK).body(allCoursesByUser);
     }
