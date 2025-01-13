@@ -7,10 +7,13 @@ spring:
         # import:  'optional:configserver:'
         import:  'configserver:'
     cloud:
-      config:
-        discovery:
-            # The serviceId is the name of the service in the Eureka Server.
-            serviceId: dl-config-server
+        config:
+            discovery:
+                # The serviceId is the name of the service in the Eureka Server.
+                serviceId: dl-config-server
+            # The username and password are used to access the Config Server (basic authentication) as it is now using Spring Security.
+            username: admin
+            password: 'admin'
 
 
 # ================================================================================================================================
