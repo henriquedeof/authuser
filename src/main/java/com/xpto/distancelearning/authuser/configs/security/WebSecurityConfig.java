@@ -1,13 +1,17 @@
 package com.xpto.distancelearning.authuser.configs.security;
 
+import com.xpto.distancelearning.authuser.configs.security.jwt.AuthenticationJwtFilter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpMethod;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 
 @Configuration
@@ -21,29 +25,47 @@ public class WebSecurityConfig {
     private AuthenticationEntryPointImpl authenticationEntryPoint;
 
     private static final String[] AUTH_WHITELIST = {
-            // Allow users to access the /auth endpoint/resource, which is located on AuthenticationController > @RequestMapping("/auth")
+            // Allow users to access the /auth endpoint/resource (without the need of authentication), which is located on AuthenticationController > @RequestMapping("/auth")
             "/auth/**"
     };
 
+//    This method was using basic authentication. I changed it to JWT authentication (see below).
+//    @Bean
+//    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+//        http
+//                // The authenticationEntryPoint is used to return a 401 Unauthorized error to the client when an exception is thrown
+//                // due to an unauthenticated user trying to access a resource that requires authentication.
+//                .httpBasic(httpBasic -> httpBasic.authenticationEntryPoint(authenticationEntryPoint))
+//                //.httpBasic(Customizer.withDefaults())
+//                .authorizeHttpRequests(authorize -> authorize
+//                        // Allow users to access the AUTH_WHITELIST endpoints/resources without the need of authentication.
+//                        .requestMatchers(AUTH_WHITELIST).permitAll()
+//
+//                        // Allow users to access the /users endpoint/resource, which is located on UserController > @RequestMapping("/users"). This is only allowed for users with the role "STUDENT".
+//                        // The String "STUDENT" is what I have on DB (tb_roles) but without the "ROLE_" prefix.
+//                        // If User not "STUDENT", then the response will be a 403 Forbidde, which means the user was able to authenticate, but they do not have the correct permissions to access the resource.
+//                        .requestMatchers(HttpMethod.GET, "/users/**").hasRole("STUDENT")
+//                        .anyRequest().authenticated()
+//                )
+//                .csrf(csrf -> csrf.disable());
+//
+//        return http.build();
+//    }
+
+    // This is the new implementation using JWT authentication.
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-                // The authenticationEntryPoint is used to return a 401 Unauthorized error to the client when an exception is thrown
-                // due to an unauthenticated user trying to access a resource that requires authentication.
-                .httpBasic(httpBasic -> httpBasic.authenticationEntryPoint(authenticationEntryPoint))
-                //.httpBasic(Customizer.withDefaults())
+                .exceptionHandling(exceptionHandling -> exceptionHandling.authenticationEntryPoint(authenticationEntryPoint))
+                .sessionManagement(sessionManagement -> sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(authorize -> authorize
-                        // Allow users to access the AUTH_WHITELIST endpoints/resources
+                        // Allow users to access the AUTH_WHITELIST endpoints/resources without the need of authentication.
                         .requestMatchers(AUTH_WHITELIST).permitAll()
-
-                        // Allow users to access the /users endpoint/resource, which is located on UserController > @RequestMapping("/users"). This is only allowed for users with the role "STUDENT".
-                        // The String "STUDENT" is what I have on DB (tb_roles) but without the "ROLE_" prefix.
-                        // If User not "STUDENT", then the response will be a 403 Forbidde, which means the user was able to authenticate, but they do not have the correct permissions to access the resource.
-                        .requestMatchers(HttpMethod.GET, "/users/**").hasRole("STUDENT")
                         .anyRequest().authenticated()
                 )
                 .csrf(csrf -> csrf.disable());
 
+        http.addFilterBefore(authenticationJwtFilter(), UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
 
@@ -62,6 +84,24 @@ public class WebSecurityConfig {
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
+    }
+
+//    This was the implementation provided by Michelli where her class extends WebSecurityConfigurerAdapter.
+//    @Override
+//    @Bean
+//    public AuthenticationManager authenticationManagerBean() throws Exception {
+//        return super.authenticationManagerBean();
+//    }
+
+    // This is my implementation of the authenticationManagerBean method. I am not extending the WebSecurityConfigurerAdapter class.
+    @Bean
+    public AuthenticationManager authenticationManagerBean(HttpSecurity http) throws Exception {
+        return http.getSharedObject(AuthenticationManagerBuilder.class).build();
+    }
+
+    @Bean
+    public AuthenticationJwtFilter authenticationJwtFilter() {
+        return new AuthenticationJwtFilter();
     }
 }
 

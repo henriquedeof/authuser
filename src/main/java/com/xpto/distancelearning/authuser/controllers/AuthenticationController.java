@@ -1,6 +1,9 @@
 package com.xpto.distancelearning.authuser.controllers;
 
 import com.fasterxml.jackson.annotation.JsonView;
+import com.xpto.distancelearning.authuser.configs.security.jwt.JwtProvider;
+import com.xpto.distancelearning.authuser.dtos.JwtDto;
+import com.xpto.distancelearning.authuser.dtos.LoginDto;
 import com.xpto.distancelearning.authuser.dtos.UserDto;
 import com.xpto.distancelearning.authuser.enums.RoleType;
 import com.xpto.distancelearning.authuser.enums.UserStatus;
@@ -14,6 +17,10 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -39,6 +46,12 @@ public class AuthenticationController {
 
     @Autowired
     private PasswordEncoder passwordEncoder;
+
+    @Autowired
+    private JwtProvider jwtProvider;
+
+    @Autowired
+    private AuthenticationManager authenticationManager;
 
     // Because I am using Validation Groups (or 'groups'), I need to use the annotation @Validated (NOT @Valid)
     @PostMapping("/signup")
@@ -75,6 +88,16 @@ public class AuthenticationController {
         log.debug("POST registerUser UserId saved {}: ", userModel.getUserId());
         log.info("User saved successfully. UserId {}: ", userModel.getUserId());
         return ResponseEntity.status(HttpStatus.CREATED).body(userModel);
+    }
+
+    @PostMapping("/login")
+    public ResponseEntity<JwtDto> authenticateUser(@Validated @RequestBody LoginDto loginDto) {
+        Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(loginDto.getUsername(), loginDto.getPassword()));
+
+        // Set the authentication object in the SecurityContext
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+        String jwt = jwtProvider.generateJwt(authentication);
+        return ResponseEntity.ok(new JwtDto(jwt));
     }
 
     @GetMapping("/") // Access the URL: http://localhost:8080/auth/
