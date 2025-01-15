@@ -15,7 +15,7 @@ import java.util.stream.Collectors;
 
 @Data
 @AllArgsConstructor
-public class UserDetailsImpl implements UserDetails {
+public class UserDetailsImpl implements UserDetails { // This UserDetails interface is used by the Spring Security for the authentication process.
 
     private UUID userId;
     private String fullName;
@@ -25,7 +25,8 @@ public class UserDetailsImpl implements UserDetails {
     private String email;
     private Collection<? extends GrantedAuthority> authorities; // This line links to the RoleModel class due to the GrantedAuthority interface.
 
-    // This is called by the UserDetailsServiceImpl class. This method is used for the authentication process.
+    // This is called by the UserDetailsServiceImpl class for basic authentication. This method is used for the authentication process.
+    // THis method is also called by the JwtProvider class for the generation of the JWT token.
     public static UserDetailsImpl build(UserModel userModel) {
         List<GrantedAuthority> authorities = userModel.getRoles().stream()
                 .map(role -> new SimpleGrantedAuthority(role.getAuthority()))
