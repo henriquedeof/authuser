@@ -1,17 +1,10 @@
 spring:
-    profiles:
-        active: prod
-    application:
-        name: dl-authuser-service
+    config:
+        # The 'configserver:' is used to tell the application to look for the configurations in the Config Server.
+        # The 'optional' prefix is used to tell the application that if the Config Server is not available, it should use the configurations in this application.yaml file (need to uncomment them).
+        # import:  'optional:configserver:'
+        import:  'configserver:${CONFIG_SERVER_URL}'
 
-# ================================================================================================================================
-# The configurations below are commented they were moved to the application-dev.yaml file.
-# ================================================================================================================================
-#    config:
-#        # The 'configserver:' is used to tell the application to look for the configurations in the Config Server.
-#        # The 'optional' prefix is used to tell the application that if the Config Server is not available, it should use the configurations in this application.yaml file (need to uncomment them).
-#        # import:  'optional:configserver:'
-#        import:  'configserver:'
 #    cloud:
 #        config:
 #            discovery:
@@ -20,7 +13,6 @@ spring:
 #            # The username and password are used to access the Config Server (basic authentication) as it is now using Spring Security.
 #            username: admin
 #            password: 'admin'
-
 
 
 # ================================================================================================================================
