@@ -4,9 +4,13 @@ import com.xpto.distancelearning.authuser.configs.security.jwt.AuthenticationJwt
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.access.hierarchicalroles.RoleHierarchy;
+import org.springframework.security.access.hierarchicalroles.RoleHierarchyImpl;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
+import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -15,7 +19,9 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 
 @Configuration
-public class WebSecurityConfig {
+@EnableGlobalMethodSecurity(prePostEnabled = true) // Setting global config of the authentication manager. This is used to enable the @PreAuthorize annotation.
+@EnableWebSecurity
+public class WebSecurityConfig { // henrique: Maybe the class name should be SecurityConfig
 
     // I do not need to set it here as the UserDetailsServiceImpl class is already setting it. The UserDetailsServiceImpl class is automatically called by the Spring Security framework.
 //    @Autowired
@@ -44,6 +50,7 @@ public class WebSecurityConfig {
 //                        // Allow users to access the /users endpoint/resource, which is located on UserController > @RequestMapping("/users"). This is only allowed for users with the role "STUDENT".
 //                        // The String "STUDENT" is what I have on DB (tb_roles) but without the "ROLE_" prefix.
 //                        // If User not "STUDENT", then the response will be a 403 Forbidde, which means the user was able to authenticate, but they do not have the correct permissions to access the resource.
+//                        // Instead of using this method, I can use the @PreAuthorize annotation on the UserController class.
 //                        .requestMatchers(HttpMethod.GET, "/users/**").hasRole("STUDENT")
 //                        .anyRequest().authenticated()
 //                )
@@ -80,18 +87,30 @@ public class WebSecurityConfig {
 //        return new InMemoryUserDetailsManager(user);
 //    }
 
+    /**
+     * This is used to set the role hierarchy and set automatically by the Spring Security framework.
+     */
+    @Bean
+    public RoleHierarchy roleHierarchy() {
+        // This is the deprecated way to set the role hierarchy.
+//        RoleHierarchyImpl roleHierarchy = new RoleHierarchyImpl();
+//        String hierarchy = "ROLE_ADMIN > ROLE_INSTRUCTOR \n ROLE_INSTRUCTOR > ROLE_STUDENT \n ROLE_STUDENT > ROLE_USER";
+//        roleHierarchy.setHierarchy(hierarchy);
+//        return roleHierarchy;
+
+        // This is the new way to set the role hierarchy. See https://docs.spring.io/spring-security/reference/servlet/authorization/architecture.html#authz-hierarchical-roles
+        return RoleHierarchyImpl.withDefaultRolePrefix()
+                .role("ADMIN").implies("INSTRUCTOR")
+                .role("INSTRUCTOR").implies("STUDENT")
+                .role("STUDENT").implies("USER")
+                .build();
+    }
+
     // This is used on the AuthenticationController class to encrypt the password before saving it.
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
-
-//    This was the implementation provided by Michelli where her class extends WebSecurityConfigurerAdapter.
-//    @Override
-//    @Bean
-//    public AuthenticationManager authenticationManagerBean() throws Exception {
-//        return super.authenticationManagerBean();
-//    }
 
     // This is my implementation of the authenticationManagerBean method. I am not extending the WebSecurityConfigurerAdapter class.
     @Bean
@@ -146,6 +165,11 @@ public class WebSecurityConfig {
 //                .passwordEncoder(passwordEncoder());
 //    }
 //
+//    @Override
+//    @Bean
+//    public AuthenticationManager authenticationManagerBean() throws Exception {
+//        return super.authenticationManagerBean();
+//    }
 //
 //    @Bean
 //    public PasswordEncoder passwordEncoder() {

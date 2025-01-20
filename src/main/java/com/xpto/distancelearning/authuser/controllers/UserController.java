@@ -1,6 +1,8 @@
 package com.xpto.distancelearning.authuser.controllers;
 
 import com.fasterxml.jackson.annotation.JsonView;
+import com.xpto.distancelearning.authuser.configs.security.AuthenticationCurrentUserService;
+import com.xpto.distancelearning.authuser.configs.security.UserDetailsImpl;
 import com.xpto.distancelearning.authuser.dtos.UserDto;
 import com.xpto.distancelearning.authuser.models.UserModel;
 import com.xpto.distancelearning.authuser.services.UserService;
@@ -13,6 +15,10 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -33,6 +39,9 @@ public class UserController {
     @Autowired
     private UserService userService;
 
+    @Autowired
+    private AuthenticationCurrentUserService authenticationCurrentUserService;
+
     /**
      * This method is used to get all users.
      * It is also used to filter the data using Specification, and Pagination.
@@ -41,8 +50,14 @@ public class UserController {
      * @param pageable
      * @return
      */
+    // This annotation is used to check if the user has the role "ADMIN". If not, the response will be a 403 Forbidden, which means the user was able to authenticate, but they do not have the correct permissions to access the resource.
+    // The String "ADMIN" is what I have on DB (tb_roles) but without the "ROLE_" prefix.
+    // I was just able to use this annotation because I set the @EnableGlobalMethodSecurity(prePostEnabled = true) annotation on the WebSecurityConfig class.
+    @PreAuthorize("hasAnyRole('ADMIN', 'STUDENT')")
     @GetMapping
-    public ResponseEntity<Page<UserModel>> getAllUsers(SpecificationTemplate.UserSpec spec, @PageableDefault(page = 0, size = 10, sort = "userId", direction = Sort.Direction.ASC) Pageable pageable) {
+    public ResponseEntity<Page<UserModel>> getAllUsers(SpecificationTemplate.UserSpec spec,
+                                                       @PageableDefault(page = 0, size = 10, sort = "userId", direction = Sort.Direction.ASC) Pageable pageable,
+                                                       Authentication authentication) { // authentication is the object that contains the current user's information (username, password, roles, etc.) that is accessing the system.
 //        Page<UserModel> userModelPage = null;
 //        if(courseId != null){
 //            userModelPage = userService.findAll(SpecificationTemplate.userCourseId(courseId).and(spec), pageable);
@@ -57,8 +72,14 @@ public class UserController {
 //        }
 //        return ResponseEntity.status(HttpStatus.OK).body(userModelPage);
 
+
+        // userDetails is the object that contains the current user's information (username, password, roles, etc.) that is accessing the system.
+        UserDetails userDetails = (UserDetailsImpl) authentication.getPrincipal();
+        log.info("Authentication {}", userDetails.getUsername());
+        // This is another way to get the current user's information: authenticationCurrentUserService.getCurrentUser()
+
         Page<UserModel> userModelPage = userService.findAll(spec, pageable);
-        if(!userModelPage.isEmpty()){
+        if(!userModelPage.isEmpty()) {
             for(UserModel user : userModelPage.toList()){
                 // Setting HATEOAS
                 user.add(linkTo(methodOn(UserController.class).getOneUser(user.getUserId())).withSelfRel());
@@ -67,15 +88,24 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.OK).body(userModelPage);
     }
 
+    @PreAuthorize("hasAnyRole('STUDENT')")
     @GetMapping("/{userId}")
     public ResponseEntity<Object> getOneUser(@PathVariable(value = "userId") UUID userId) {
-        Optional<UserModel> userModel = userService.findById(userId);
-        return userModel.<ResponseEntity<Object>>map(model -> ResponseEntity.status(HttpStatus.OK).body(model)).orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found"));
-//        if (userModel.isPresent()) {
-//            return ResponseEntity.status(HttpStatus.OK).body(userModel.get());
-//        } else {
-//            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found");
-//        }
+        UUID currentUserId = authenticationCurrentUserService.getCurrentUser().getUserId();
+
+        // This condition is used to check if the user is trying to access their own data.
+        if(currentUserId.equals(userId)) {
+            Optional<UserModel> userModel = userService.findById(userId);
+            return userModel.<ResponseEntity<Object>>map(model -> ResponseEntity.status(HttpStatus.OK).body(model)).orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found"));
+//          if (userModel.isPresent()) {
+//              return ResponseEntity.status(HttpStatus.OK).body(userModel.get());
+//          } else {
+//              return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found");
+//          }
+
+        } else {
+            throw new AccessDeniedException("Forbidden");
+        }
     }
 
     @DeleteMapping("/{userId}")
