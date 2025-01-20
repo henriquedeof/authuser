@@ -5,6 +5,9 @@ spring:
         # import:  'optional:configserver:'
         import:  'configserver:${CONFIG_SERVER_URL}'
 
+# ================================================================================================================================
+# The configurations below are commented as they are now set in the Heroku environment variables (CONFIG_SERVER_URL).
+# ================================================================================================================================
 #    cloud:
 #        config:
 #            discovery:
