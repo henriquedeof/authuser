@@ -18,7 +18,7 @@ public interface UserRepository extends JpaRepository<UserModel, UUID>, JpaSpeci
     boolean existsByEmail(String email);
 
     /**
-     * Although the UserModel has a relationship with the RoleModel, the roles are not loaded by default.
+     * Although the UserModel has a relationship with the RoleModel, the roles are not loaded by default (set as LAZY).
      * This method uses the EntityGraph to load the roles (EAGER).
      *
      * @param username The username of the user.
@@ -26,4 +26,11 @@ public interface UserRepository extends JpaRepository<UserModel, UUID>, JpaSpeci
      */
     @EntityGraph(attributePaths = "roles", type = EntityGraph.EntityGraphType.FETCH)
     Optional<UserModel> findByUsername(String username);
+
+    /**
+     * Although the UserModel has a relationship with the RoleModel, the roles are not loaded by default (set as LAZY).
+     * This method uses the EntityGraph to load the roles (EAGER).
+     */
+    @EntityGraph(attributePaths = "roles", type = EntityGraph.EntityGraphType.FETCH)
+    Optional<UserModel> findById(UUID userId);
 }

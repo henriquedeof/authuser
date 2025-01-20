@@ -12,6 +12,8 @@ import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
@@ -40,22 +42,26 @@ public class CourseClient {
         // I used the @Retry annotation just for testing purposes.
     //@Retry(name = "retryInstance", fallbackMethod = "retryFallback") // Using retry at the method level.
     @CircuitBreaker(name = "circuitBreakerInstance") // , fallbackMethod = "circuitBreakerFallback") // Using circuit breaker at the method level.
-    public Page<CourseDto> getAllCoursesByUser(UUID userId, Pageable pageable) {
+    public Page<CourseDto> getAllCoursesByUser(UUID userId, Pageable pageable, String token) {
         List<CourseDto> searchResult = null;
         ResponseEntity<ResponsePageDto<CourseDto>> result = null;
         String url = REQUEST_URL_COURSE + utilsService.createUrlGetAllCoursesByUser(userId, pageable);
 
+        // I need to pass the token to the Course Service, so it can check if the user is authorized to access the courses. CourseClient is used to call the Course Service.
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("Authorization", token);
+        HttpEntity<String> requestEntity = new HttpEntity<>("parameters", headers);
+
         log.debug("Request URL: {} ", url);
         log.info("Request URL: {} ", url);
 
-        try {
-            ParameterizedTypeReference<ResponsePageDto<CourseDto>> responseType = new ParameterizedTypeReference<>() { };
-            result = restTemplate.exchange(url, HttpMethod.GET, null, responseType); // It calls the Course API and also the dl-course.tb_courses_users table
-            searchResult = result.getBody().getContent();
-            log.debug("Response Number of Elements: {} ", searchResult.size());
-        } catch (HttpStatusCodeException e) {
-            log.error("Error request /courses {} ", e.getMessage(), e);
-        }
+//        try {
+        ParameterizedTypeReference<ResponsePageDto<CourseDto>> responseType = new ParameterizedTypeReference<>() { };
+        result = restTemplate.exchange(url, HttpMethod.GET, requestEntity, responseType); // It calls the Course API and also the dl-course.tb_courses_users table
+        searchResult = result.getBody().getContent();
+        log.debug("Response Number of Elements: {} ", searchResult.size());
+//        } catch (HttpStatusCodeException e) {  log.error("Error request /courses {} ", e.getMessage(), e); }
+
         log.info("Ending request /courses userId {} ", userId);
         return result.getBody();
     }

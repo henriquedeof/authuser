@@ -17,13 +17,28 @@ import java.util.stream.Collectors;
 @AllArgsConstructor
 public class UserDetailsImpl implements UserDetails { // This UserDetails interface is used by the Spring Security for the authentication process.
 
+    // ================================== Improvements I could do ==================================
+    // henrique: Instead of using the UserDetailsImpl.build method, I could use the UserDetailsImpl constructor, passing userModel as argument.
+    //  private final UserModel user;
+    //  public UserDetailsImpl(UserModel user) {
+    //      this.user = user;
+    //  }
+    //
+    //    @Override
+    //    public Collection<? extends GrantedAuthority> getAuthorities() {
+    //        return user.getRoles().stream()
+    //                .map(role -> new SimpleGrantedAuthority(role.getName()))
+    //                .collect(Collectors.toList());
+    //    }
+    // ===============================================================================================
+
     private UUID userId;
     private String fullName;
     private String username;
     @JsonIgnore
     private String password;
     private String email;
-    private Collection<? extends GrantedAuthority> authorities; // This line links to the RoleModel class due to the GrantedAuthority interface.
+    private Collection<? extends GrantedAuthority> authorities; // This line links to the RoleModel class as it implements the GrantedAuthority interface.
 
     // This is called by the UserDetailsServiceImpl class for basic authentication. This method is used for the authentication process.
     // THis method is also called by the JwtProvider class for the generation of the JWT token.
@@ -73,6 +88,8 @@ public class UserDetailsImpl implements UserDetails { // This UserDetails interf
 
     @Override
     public boolean isEnabled() {
+        // If the user is active, then the user is enabled. In this example, the userModel does not have a field to check if it is enabled.
+        // In this case, I am considering that the user always is enabled.
         return true;
     }
 }
