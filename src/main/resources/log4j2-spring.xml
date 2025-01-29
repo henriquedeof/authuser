@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="DEBUG">
+    <Appenders>
+        <Console name="LogToConsole" target="SYSTEM_OUT">
+            <!-- "dl-authuser-service" is the same as in the application.yaml -->
+            <EcsLayout serviceName="dl-authuser-service" serviceNodeName="dl-cluster-node"/>
+        </Console>
+        <File name="LogToFile" fileName="logs/dl-authuser-service.log">
+            <EcsLayout serviceName="dl-authuser-service" serviceNodeName="dl-cluster-node"/>
+        </File>
+    </Appenders>
+    <Loggers>
+        <Root level="info">
+            <AppenderRef ref="LogToFile"/>
+            <AppenderRef ref="LogToConsole"/>
+        </Root>
+    </Loggers>
+</Configuration>
