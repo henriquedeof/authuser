@@ -8,6 +8,7 @@ import org.springframework.security.access.hierarchicalroles.RoleHierarchy;
 import org.springframework.security.access.hierarchicalroles.RoleHierarchyImpl;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -112,11 +113,18 @@ public class WebSecurityConfig { // henrique: Maybe the class name should be Sec
         return new BCryptPasswordEncoder();
     }
 
+    // ====================================================================================================================
     // This is my implementation of the authenticationManagerBean method. I am not extending the WebSecurityConfigurerAdapter class.
     @Bean
     public AuthenticationManager authenticationManagerBean(HttpSecurity http) throws Exception {
         return http.getSharedObject(AuthenticationManagerBuilder.class).build();
     }
+//    // The method below is the implementation suggested by Michelli Brito, during the course.
+//    @Bean
+//    public AuthenticationManager authenticationManagerBean(AuthenticationConfiguration auth) throws Exception {
+//        return auth.getAuthenticationManager();
+//    }
+    // ====================================================================================================================
 
     @Bean
     public AuthenticationJwtFilter authenticationJwtFilter() {
