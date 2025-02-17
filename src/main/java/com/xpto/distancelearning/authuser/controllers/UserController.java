@@ -53,7 +53,7 @@ public class UserController {
     // This annotation is used to check if the user has the role "ADMIN". If not, the response will be a 403 Forbidden, which means the user was able to authenticate, but they do not have the correct permissions to access the resource.
     // The String "ADMIN" is what I have on DB (tb_roles) but without the "ROLE_" prefix.
     // I was just able to use this annotation because I set the @EnableGlobalMethodSecurity(prePostEnabled = true) annotation on the WebSecurityConfig class.
-    @PreAuthorize("hasAnyRole('ADMIN', 'STUDENT')")
+    @PreAuthorize("hasAnyRole('ADMIN')")
     @GetMapping
     public ResponseEntity<Page<UserModel>> getAllUsers(SpecificationTemplate.UserSpec spec,
                                                        @PageableDefault(page = 0, size = 10, sort = "userId", direction = Sort.Direction.ASC) Pageable pageable,
@@ -88,7 +88,7 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.OK).body(userModelPage);
     }
 
-    @PreAuthorize("hasAnyRole('STUDENT')")
+    @PreAuthorize("hasAnyRole('USER')")
     @GetMapping("/{userId}")
     public ResponseEntity<Object> getOneUser(@PathVariable(value = "userId") UUID userId) {
         UUID currentUserId = authenticationCurrentUserService.getCurrentUser().getUserId();
