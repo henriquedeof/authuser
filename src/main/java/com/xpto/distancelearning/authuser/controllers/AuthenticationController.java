@@ -69,7 +69,7 @@ public class AuthenticationController {
             return ResponseEntity.status(HttpStatus.CONFLICT).body("Error: Email is already taken!");
         }
 
-        RoleModel roleModel = roleService.findByRoleName(RoleType.ROLE_STUDENT)
+        RoleModel roleModel = roleService.findByRoleName(RoleType.ROLE_USER)
                 .orElseThrow(() -> new RuntimeException("Error: Role is Not Found."));
 
         // Encrypt the password before saving it
@@ -78,7 +78,7 @@ public class AuthenticationController {
         var userModel = new UserModel();
         BeanUtils.copyProperties(userDto, userModel);
         userModel.setUserStatus(UserStatus.ACTIVE);
-        userModel.setUserType(UserType.STUDENT);
+        userModel.setUserType(UserType.USER);
         userModel.setCreationDate(LocalDateTime.now(ZoneId.of("UTC")));
         userModel.setLastUpdateDate(LocalDateTime.now(ZoneId.of("UTC")));
         userModel.getRoles().add(roleModel);
