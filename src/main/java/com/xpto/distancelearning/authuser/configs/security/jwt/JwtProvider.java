@@ -41,6 +41,7 @@ public class JwtProvider {
                 .issuedAt(new Date())
                 .expiration(new Date((new Date()).getTime() + jwtExpirationMs))
 //                .signWith(SignatureAlgorithm.HS512, jwtSecret) // working deprecated method. If I used this line then getUsernameJwt() and validateJwt() methods must 'work with the deprecated method'.
+//                .signWith(Keys.hmacShaKeyFor(jwtSecret.getBytes(StandardCharset.UTF_8)), SignatureAlgorithm.HS512) // Used by Michelli.
                 .signWith(getSecretKey())
                 .compact();
     }
@@ -56,8 +57,7 @@ public class JwtProvider {
 
         return Jwts.parser()
                 // .setSigningKey(jwtSecret) // working with deprecated method
-                .verifyWith(getSecretKey())
-                .build()
+                .verifyWith(getSecretKey()).build()
                 .parseSignedClaims(token)
                 .getPayload()
                 .getSubject();
@@ -68,7 +68,7 @@ public class JwtProvider {
             //Jwts.parser().setSigningKey(jwtSecret).build().parseClaimsJws(authToken); // working with deprecated method
             Jwts.parser().verifyWith(getSecretKey()).build().parseSignedClaims(authToken);
             return true;
-        } catch (SignatureException e) {
+        } catch (SignatureException e) { // Henrique: Use SecurityException instead of SignatureException??
             log.error("Invalid JWT signature: {}", e.getMessage(), e);
         } catch (MalformedJwtException e) {
             log.error("Invalid JWT token: {}", e.getMessage(), e);
